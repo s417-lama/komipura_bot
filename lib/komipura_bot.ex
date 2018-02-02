@@ -91,6 +91,11 @@ defmodule KomipuraBot do
   end
 
   def exec do
+    {{year, month, day}, _} = :calendar.local_time
+    fetch_and_tweet(day, month, year)
+  end
+
+  def exec_tomorrow do
     {{year, month, day}, _} = :calendar.local_time |> Timex.shift(days: 1)
     fetch_and_tweet(day, month, year)
   end
