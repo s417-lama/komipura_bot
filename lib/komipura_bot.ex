@@ -81,4 +81,10 @@ defmodule KomipuraBot do
     |> tweet_format(day)
     |> tweet
   end
+
+  def exec do
+    {{_year, _month, day}, _} = :calendar.local_time
+    fetch_and_tweet(day + 1)
+  end
+
 end
