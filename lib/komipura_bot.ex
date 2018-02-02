@@ -7,9 +7,18 @@ defmodule KomipuraBot do
     "http://www.com-pla.com/reservation/index.php"
   end
 
-  def fetch(day) do
+  def post(url, month, year) do
+    body = "target_ym%5By%5D=#{year}&target_ym%5Bm%5D=#{month}&house=north&facility_id=&usehour_id=&act=&val="
+    header = [
+      {"Content-Type", "application/x-www-form-urlencoded"},
+      {"Content-Length", String.length(body)}
+    ]
+    HTTPoison.post!(url, body, header)
+  end
+
+  def fetch(day, month, year) do
     url()
-    |> HTTPoison.get!
+    |> post(month, year)
     |> handle_result
     |> day_info(day)
   end
@@ -64,27 +73,26 @@ defmodule KomipuraBot do
     "#{n}限     " <> text
   end
 
-  def set_title(text, day) do
-    {{_year, month, _day}, _} = :calendar.local_time
+  def set_title(text, day, month) do
     "#{month}/#{day} コミプラ予約状況\n" <> "  身体1 身体2 身体3\n" <> text
   end
 
-  def tweet_format(data, day) do
+  def tweet_format(data, day, month) do
     0..6
     |> Enum.map(fn n -> tweet_format_row(n, data) end)
     |> Enum.join("\n")
-    |> set_title(day)
+    |> set_title(day, month)
   end
 
-  def fetch_and_tweet(day) do
-    fetch(day)
-    |> tweet_format(day)
+  def fetch_and_tweet(day, month, year) do
+    fetch(day, month, year)
+    |> tweet_format(day, month)
     |> tweet
   end
 
   def exec do
-    {{_year, _month, day}, _} = :calendar.local_time
-    fetch_and_tweet(day + 1)
+    {{year, month, day}, _} = :calendar.local_time |> Timex.shift(days: 1)
+    fetch_and_tweet(day, month, year)
   end
 
 end
