@@ -34,10 +34,51 @@ defmodule KomipuraBot do
   end
 
   def is_ok(<<129, 155>>) do
-    true
+    "○"
   end
 
   def is_ok(<<129, 126>>) do
-    false
+    "×"
+  end
+
+  def tweet(text) do
+    ExTwitter.update(text)
+  end
+
+  def tweet_format_row(n, data) do
+    data
+    |> Enum.map(&(Enum.at(&1, n)))
+    |> Enum.join("     ")
+    |> row_title(n)
+  end
+
+  def row_title(text, n) when n < 2 do
+    "#{n + 1}限     " <> text
+  end
+
+  def row_title(text, 2) do
+    "昼        " <> text
+  end
+
+  def row_title(text, n) when n > 2 do
+    "#{n}限     " <> text
+  end
+
+  def set_title(text, day) do
+    {{_year, month, _day}, _} = :calendar.local_time
+    "#{month}/#{day} コミプラ予約状況\n" <> "  身体1 身体2 身体3\n" <> text
+  end
+
+  def tweet_format(data, day) do
+    0..6
+    |> Enum.map(fn n -> tweet_format_row(n, data) end)
+    |> Enum.join("\n")
+    |> set_title(day)
+  end
+
+  def fetch_and_tweet(day) do
+    fetch(day)
+    |> tweet_format(day)
+    |> tweet
   end
 end

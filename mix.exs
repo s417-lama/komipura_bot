@@ -14,7 +14,7 @@ defmodule KomipuraBot.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :httpoison]
+      extra_applications: [:logger, :httpoison, :extwitter]
     ]
   end
 
@@ -22,7 +22,9 @@ defmodule KomipuraBot.MixProject do
   defp deps do
     [
       {:httpoison, "~> 0.13"},
-      {:floki, "~> 0.18"}
+      {:floki, "~> 0.18"},
+      {:oauther, "~> 1.1"},
+      {:extwitter, "~> 0.8"}
     ]
   end
 end
