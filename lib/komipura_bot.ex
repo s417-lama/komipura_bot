@@ -77,7 +77,7 @@ defmodule KomipuraBot do
     case :calendar.local_time do
       {{_year, ^month, ^day}, _} ->
         "本日のコミプラ予約状況\n" <> "  身体1 身体2 身体3\n" <> text
-      {{_year, month, day}, _} ->
+      _ ->
         "#{month}/#{day} コミプラ予約状況\n" <> "  身体1 身体2 身体3\n" <> text
     end
   end
