@@ -21,6 +21,26 @@ defmodule KomipuraBot do
     |> post(month, year)
     |> handle_result
     |> day_info(day)
+    |> holiday_filter(day, month, year)
+  end
+
+  def holiday_filter(data, day, month, year) do
+    date = Date.from_erl!({year, month, day})
+    case Date.day_of_week(date) do
+      weekday when weekday < 6 ->
+        case HolidayJp.holiday?(date) do
+          true ->
+            remove_1period(data)     
+          false ->
+            data
+        end
+      _ ->
+        remove_1period(data)
+    end
+  end
+
+  def remove_1period(data) do
+    Enum.map(data, fn([_head|tail]) -> ["-"|tail] end)
   end
 
   def handle_result(%HTTPoison.Response{body: html, status_code: 200}) do
