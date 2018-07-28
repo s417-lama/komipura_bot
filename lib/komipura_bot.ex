@@ -3,9 +3,7 @@ defmodule KomipuraBot do
   Documentation for KomipuraBot.
   """
 
-  def url do
-    "http://www.com-pla.com/reservation/index.php"
-  end
+  @url "http://www.com-pla.com/reservation/index.php"
 
   def post(url, month, year) do
     body = "target_ym%5By%5D=#{year}&target_ym%5Bm%5D=#{month}&house=north&facility_id=&usehour_id=&act=&val="
@@ -17,9 +15,8 @@ defmodule KomipuraBot do
   end
 
   def fetch(day, month, year) do
-    url()
-    |> post(month, year)
-    |> handle_result
+    post(@url, month, year)
+    |> handle_result()
     |> day_info(day)
     |> holiday_filter(day, month, year)
   end
@@ -29,10 +26,8 @@ defmodule KomipuraBot do
     case Date.day_of_week(date) do
       weekday when weekday < 6 ->
         case HolidayJp.holiday?(date) do
-          true ->
-            remove_1period(data)     
-          false ->
-            data
+          true  -> remove_1period(data)
+          false -> data
         end
       _ ->
         remove_1period(data)
@@ -40,7 +35,7 @@ defmodule KomipuraBot do
   end
 
   def remove_1period(data) do
-    Enum.map(data, fn([_head|tail]) -> ["-"|tail] end)
+    Enum.map(data, fn([_head | tail]) -> ["-" | tail] end)
   end
 
   def handle_result(%HTTPoison.Response{body: html, status_code: 200}) do
@@ -62,13 +57,8 @@ defmodule KomipuraBot do
     |> is_ok
   end
 
-  def is_ok(<<129, 155>>) do
-    "○"
-  end
-
-  def is_ok(<<129, 126>>) do
-    "×"
-  end
+  def is_ok(<<129, 155>>), do: "○"
+  def is_ok(<<129, 126>>), do: "×"
 
   def tweet(text) do
     ExTwitter.update(text)
@@ -81,24 +71,14 @@ defmodule KomipuraBot do
     |> row_title(n)
   end
 
-  def row_title(text, n) when n < 2 do
-    "#{n + 1}限     " <> text
-  end
-
-  def row_title(text, 2) do
-    "昼        " <> text
-  end
-
-  def row_title(text, n) when n > 2 do
-    "#{n}限     " <> text
-  end
+  def row_title(text, n) when n < 2, do: "#{n + 1}限     " <> text
+  def row_title(text, 2)           , do: "昼        "      <> text
+  def row_title(text, n) when n > 2, do: "#{n}限     "     <> text
 
   def set_title(text, day, month) do
-    case :calendar.local_time do
-      {{_year, ^month, ^day}, _} ->
-        "本日のコミプラ予約状況\n" <> "  身体1 身体2 身体3\n" <> text
-      _ ->
-        "#{month}/#{day} コミプラ予約状況\n" <> "  身体1 身体2 身体3\n" <> text
+    case :calendar.local_time() do
+      {{_year, ^month, ^day}, _} -> "本日のコミプラ予約状況\n"           <> "  身体1 身体2 身体3\n" <> text
+      _                          -> "#{month}/#{day} コミプラ予約状況\n" <> "  身体1 身体2 身体3\n" <> text
     end
   end
 
@@ -112,17 +92,16 @@ defmodule KomipuraBot do
   def fetch_and_tweet(day, month, year) do
     fetch(day, month, year)
     |> tweet_format(day, month)
-    |> tweet
+    |> tweet()
   end
 
-  def exec do
+  def exec() do
     {{year, month, day}, _} = :calendar.local_time
     fetch_and_tweet(day, month, year)
   end
 
-  def exec_tomorrow do
+  def exec_tomorrow() do
     {{year, month, day}, _} = :calendar.local_time |> Timex.shift(days: 1)
     fetch_and_tweet(day, month, year)
   end
-
 end
